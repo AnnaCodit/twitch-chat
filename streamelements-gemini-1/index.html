@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Chat Overlay</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/typeit@8.8.7/dist/index.umd.js"></script>
+</head>
+
+<body>
+    <div id="chat-container"></div>
+    <script>
+        const maxCacheSize = 100;
+        const userCache = new Map();
+
+        // Твоя функция получения аватара
+        async function getAvatar(username) {
+            if (userCache.has(username)) {
+                const avatarUrl = userCache.get(username);
+                userCache.delete(username);
+                userCache.set(username, avatarUrl);
+                return avatarUrl;
+            }
+
+            try {
+                const response = await fetch(`https://api.ivr.fi/v2/twitch/user?login=${username}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+
+                const avatarUrl = (Array.isArray(data) ? data[0]?.logo : data.logo) || "https://cdn.7tv.app/emote/01F6MQ33FG000FFJ97ZB8MWV52/1x.avif";
+
+                if (userCache.size >= maxCacheSize) {
+                    const oldestKey = userCache.keys().next().value;
+                    userCache.delete(oldestKey);
+                }
+
+                userCache.set(username, avatarUrl);
+                return avatarUrl;
+
+            } catch (error) {
+                console.error(`Ошибка при получении аватарки для ${username}:`, error);
+                return "https://cdn.7tv.app/emote/01F6MQ33FG000FFJ97ZB8MWV52/1x.avif";
+            }
+        }
+
+        const chatContainer = document.getElementById('chat-container');
+
+        // Делаем функцию асинхронной и принимаем nick (для API) и displayName (для визуала)
+        async function renderMessage(nick, displayName, htmlText) {
+            // Ждем загрузку аватарки
+            const avatar = await getAvatar(nick);
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message-box';
+
+            msgDiv.innerHTML = `
+        <img class="avatar" src="${avatar}" alt="avatar">
+        <div class="text-content">
+            <span class="username">${displayName}:</span>
+            <span class="message-text"></span>
+        </div>
+    `;
+
+            const maxX = window.innerWidth - 450;
+            const randomX = Math.max(0, Math.floor(Math.random() * maxX));
+            msgDiv.style.left = `${randomX}px`;
+
+            const randomY = Math.floor(Math.random() * (window.innerHeight - 150));
+
+            if (randomY > window.innerHeight / 2) {
+                msgDiv.style.bottom = `${window.innerHeight - randomY}px`;
+            } else {
+                msgDiv.style.top = `${randomY}px`;
+            }
+
+            chatContainer.appendChild(msgDiv);
+
+            const textContainer = msgDiv.querySelector('.message-text');
+
+            new TypeIt(textContainer, {
+                strings: htmlText,
+                speed: 30,
+                html: true,
+                cursorChar: "█",
+                lifeLike: true,
+                afterComplete: (instance) => {
+                    instance.destroy();
+                    setTimeout(() => {
+                        msgDiv.style.opacity = '0';
+                        setTimeout(() => msgDiv.remove(), 500);
+                    }, 5000); // 5 секунд после печатанья
+                }
+            }).go();
+        }
+
+        // --- ЛОКАЛЬНОЕ ТЕСТИРОВАНИЕ ---
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                const hackEmote = "<img src='https://cdn.7tv.app/emote/01F6MQ33FG000FFJ97ZB8MWV52/1x.avif' alt='Hackermans'>";
+                const sampleTexts = [
+                    `Взлом системы завершен... ${hackEmote}`,
+                    `Запускаю протокол обхода файрвола. ${hackEmote} ${hackEmote}`,
+                    `Ого, какой крутой оверлей! Очень длинное сообщение для проверки того, как TypeIt переносит строки при печатании текста и как блок растет по высоте. ${hackEmote} ${hackEmote} ${hackEmote}`,
+                    `Подключение установлено. ${hackEmote}`,
+                    `Доступ разрешен. ${hackEmote} Инициализация... ${hackEmote}`
+                ];
+                const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+
+                // Для теста я добавила реальный Twitch-ник, чтобы проверить работу API ivr.fi
+                const testUsers = [
+                    { nick: 'forsen', display: 'Forsen' },
+                    { nick: 'shroud', display: 'shroud' },
+                    { nick: 'lirik', display: 'LIRIK' },
+                    { nick: 'nonexistentuser12345', display: 'ErrorUser' } // Проверка заглушки
+                ];
+                const user = testUsers[Math.floor(Math.random() * testUsers.length)];
+
+                renderMessage(user.nick, user.display, randomText);
+            }
+        });
+
+        // --- ИНТЕГРАЦИЯ СО STREAMELEMENTS ---
+        window.addEventListener('onEventReceived', function (obj) {
+            if (obj.detail.listener !== "message") return;
+            const data = obj.detail.event.data;
+
+            // Передаем правильные параметры
+            renderMessage(data.nick, data.displayName, data.text);
+        });
+    </script>
+</body>
+
+</html>
