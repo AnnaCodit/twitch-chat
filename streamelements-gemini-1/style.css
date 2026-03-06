@@ -5,11 +5,18 @@
     --term-bg: #0a0a0a;
 }
 
-body {
+* {
     margin: 0;
     padding: 0;
+}
+
+html,
+body {
     width: 100vw;
     height: 100vh;
+}
+
+body {
     background-color: transparent;
     overflow: hidden;
     font-family: 'VT323', monospace;
@@ -31,6 +38,7 @@ body {
     transition: opacity 0.5s ease-out;
     overflow: hidden;
     /* Важно: обрезает CRT-эффект строго по границам рамки */
+    animation: bubbleAppear 0.3s ease-out;
 }
 
 /* CRT-сканлайны теперь живут ТОЛЬКО внутри самого сообщения */
@@ -108,4 +116,16 @@ body {
 .ti-cursor {
     color: var(--term-green);
     margin-left: 2px;
+}
+
+@keyframes bubbleAppear {
+    from {
+        transform: scale(0.8) translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
 }
