@@ -1,5 +1,6 @@
 const maxCacheSize = 100;
 const userCache = new Map();
+let messagesCount = 0;
 
 // Твоя функция получения аватара
 async function getAvatar(username) {
@@ -39,6 +40,7 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
 
     if (document.hidden) return;
 
+
     // Ждем загрузку аватарки
     const avatar = await getAvatar(nick);
 
@@ -49,15 +51,15 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
     const badgesHtml = badges.map(badge => `<img src="${badge.url}" alt="badge">`).join('');
 
     msgDiv.innerHTML = `
-                <img class="avatar" src="${avatar}">
-                <div class="text-content">
-                    <div class="user-meta">
-                        <div class="username">${displayName}</div>
-                        <div class="badges">${badgesHtml}</div>
-                    </div>            
-                    <span class="message-text"></span>
-                </div>
-            `;
+        <img class="avatar" src="${avatar}">
+        <div class="text-content">
+            <div class="user-meta">
+                <div class="username">${displayName}</div>
+                <div class="badges">${badgesHtml}</div>
+            </div>            
+            <span class="message-text"></span>
+        </div>
+    `;
 
     const maxX = window.innerWidth - 450;
     const randomX = Math.max(0, Math.floor(Math.random() * maxX));
@@ -74,6 +76,12 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
     chatContainer.appendChild(msgDiv);
 
     const textContainer = msgDiv.querySelector('.message-text');
+    messagesCount++;
+
+    let messagesRemoveTimeout = 5000;
+    if (messagesCount == 1) messagesRemoveTimeout = 50000000;
+
+    console.log(messagesCount);
 
     new TypeIt(textContainer, {
         strings: htmlText,
@@ -83,12 +91,19 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
         lifeLike: true,
         afterComplete: (instance) => {
             instance.destroy();
+            console.log(messagesCount, 'внутри afterComplete');
+            console.log(`Удаляем сообщение через ${messagesRemoveTimeout}ms`);
+
             setTimeout(() => {
                 msgDiv.style.opacity = '0';
-                setTimeout(() => msgDiv.remove(), 500);
-            }, 5000); // 5 секунд после печатанья
+                msgDiv.remove();
+                // setTimeout(() => msgDiv.remove(), 500);
+            }, messagesRemoveTimeout); // 5 секунд после печатанья
+
         }
     }).go();
+
+
 }
 
 // --- ИНТЕГРАЦИЯ СО STREAMELEMENTS ---
