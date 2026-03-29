@@ -101,9 +101,8 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
             console.log(`Удаляем сообщение через ${messagesRemoveTimeout}ms`);
 
             setTimeout(() => {
-                msgDiv.classList.add('removing');
-                // The longest animation is defaultDisappear at 0.5s, so we wait 500ms
-                setTimeout(() => msgDiv.remove(), 500);
+msgDiv.classList.add('removing');
+msgDiv.addEventListener('animationend', () => msgDiv.remove(), { once: true });
             }, messagesRemoveTimeout); // 5 секунд после печатанья
 
         }
