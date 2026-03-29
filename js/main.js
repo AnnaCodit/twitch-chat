@@ -36,11 +36,6 @@ async function getAvatar(username) {
 
 const chatContainer = document.getElementById('chat-container');
 
-// Применяем тему из GET-параметра
-const urlParams = new URLSearchParams(window.location.search);
-const theme = urlParams.get('theme') || 'default';
-document.body.classList.add(`theme-${theme}`);
-
 // Делаем функцию асинхронной и принимаем nick (для API) и displayName (для визуала)
 async function renderMessage(nick, displayName, htmlText, badges = []) {
 
@@ -101,8 +96,8 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
             console.log(`Удаляем сообщение через ${messagesRemoveTimeout}ms`);
 
             setTimeout(() => {
-msgDiv.classList.add('removing');
-msgDiv.addEventListener('animationend', () => msgDiv.remove(), { once: true });
+                msgDiv.classList.add('removing');
+                msgDiv.addEventListener('animationend', () => msgDiv.remove(), { once: true });
             }, messagesRemoveTimeout); // 5 секунд после печатанья
 
         }
