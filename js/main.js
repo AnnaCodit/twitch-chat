@@ -1,3 +1,4 @@
+const pauseFirstMessage = true;
 const maxCacheSize = 100;
 const userCache = new Map();
 let messagesCount = 0;
@@ -79,7 +80,7 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
     messagesCount++;
 
     let messagesRemoveTimeout = 5000;
-    if (messagesCount == 1) messagesRemoveTimeout = 50000000;
+    if (messagesCount == 1 && pauseFirstMessage) messagesRemoveTimeout = 5000000000;
 
     console.log(messagesCount);
 
