@@ -96,9 +96,8 @@ async function renderMessage(nick, displayName, htmlText, badges = []) {
             console.log(`Удаляем сообщение через ${messagesRemoveTimeout}ms`);
 
             setTimeout(() => {
-                msgDiv.style.opacity = '0';
-                msgDiv.remove();
-                // setTimeout(() => msgDiv.remove(), 500);
+                msgDiv.classList.add('removing');
+                msgDiv.addEventListener('animationend', () => msgDiv.remove(), { once: true });
             }, messagesRemoveTimeout); // 5 секунд после печатанья
 
         }
