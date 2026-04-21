@@ -15,8 +15,8 @@ document.addEventListener('keydown', (e) => {
         const testUsers = [
             { nick: 'forsen', display: 'Forsen' },
             { nick: 'shroud', display: 'shroud' },
-            { nick: 'lirik', display: 'LIRIK' },
-            { nick: 'nonexistentuser12345', display: 'ErrorUser' } // Проверка заглушки
+            { nick: 'falseduc_frezafurry', display: 'falseduc_frezafurry' },
+            { nick: 'AzulaAzulaAzulaaaa', display: 'AzulaAzulaAzulaaaa' } // Проверка заглушки
         ];
         const user = testUsers[Math.floor(Math.random() * testUsers.length)];
 
